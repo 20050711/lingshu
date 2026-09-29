@@ -1,0 +1,76 @@
+# 灵枢 · 局域网部署（可与同机其他站点共用同一 nginx 进程，端口/后端/日志独立）
+# 链路：Windows portproxy(24426) -> WSL:24426 -> 本配置 -> 后端 127.0.0.1:8001
+# 安装：sudo cp /opt/tardis/deploy/tardis.nginx /etc/nginx/sites-available/tardis
+#       sudo ln -s /etc/nginx/sites-available/tardis /etc/nginx/sites-enabled/tardis && sudo nginx -s reload
+server {
+    listen 24426;
+    listen [::]:24426;
+    server_name _;
+
+    client_max_body_size 4g;
+
+    # 安全响应头（HSTS 仅 HTTPS 生效，HTTP 下浏览器会忽略）
+    server_tokens off;
+    add_header X-Frame-Options DENY always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" always;
+
+    # ---- 静态前端（dist 产物为绝对路径 /assets/*）----
+    root /opt/tardis/frontend/dist;
+    index index.html;
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    location /assets/ {          # 内容哈希资源：长缓存
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        add_header Content-Security-Policy "default-src 'self'" always;
+        access_log off;
+    }
+    location = /favicon.png { expires 1d; access_log off; }
+    location = /logo.jpg     { expires 1d; access_log off; }
+
+    location / {                 # SPA fallback（BrowserRouter 深链刷新）
+        try_files $uri $uri/ /index.html;
+    }
+    location = /index.html {
+        expires -1;
+        add_header Cache-Control "no-store";
+        add_header X-Frame-Options DENY always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" always;
+    }
+
+    # ---- /api 反向代理（含 SSE）----
+    location /api/ {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;       # 保留原始 Host（含端口）——后端同源判定用
+        proxy_set_header Connection "";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Internal-Request "1";   # 配合 TRUSTED_PROXIES=127.0.0.1 恢复真实 IP
+
+        # SSE（fetch ReadableStream）必须关 buffering/cache
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_request_buffering off;
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 720s;
+    }
+
+    error_page 502 503 504 /50x.html;
+    location = /50x.html { root /usr/share/nginx/html; internal; }
+
+    access_log /data/tardis/logs/nginx-access.log;
+    error_log  /data/tardis/logs/nginx-error.log;
+}

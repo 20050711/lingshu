@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+real-browser/.venv/
+
+# 密钥与本地配置（不入库；模板见 backend/.env.example）
+backend/.env
+backend/.env.bak*
+backend/.env.test
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/dist-deploy/
+frontend/dist.bak-*
+
+# 运行期数据与日志
+backend/data/
+/data/
+*.log
+/tmp/
+
+# E2E / 压测运行产物（报告、cookie jar、中间文件）
+e2e-report/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 证书
+*.pem
+*.key

@@ -1,0 +1,33 @@
+# 锁定版本（SEC-22，2026-08-17）：按 aip conda env 当前已验证组合锁定（pip freeze 过滤）。
+# 升级依赖须显式改版本并复跑 pip-audit + 回归。
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+sqlalchemy[asyncio]==2.0.51
+asyncpg==0.31.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
+redis==8.1.0
+bcrypt==5.0.0
+PyJWT==2.13.0
+python-multipart==0.0.32
+openpyxl==3.1.5
+langgraph==1.2.10
+openai==2.52.0
+PyYAML==6.0.3
+APScheduler==3.11.3
+python-docx==1.2.0
+python-pptx==1.0.2
+PyMuPDF==1.28.0
+httpx==0.28.1
+Pillow==12.3.0
+playwright==1.62.0
+# 2026-08-24：本地语音转写（FunASR 中文 ASR，会议纪要/媒体理解默认后端；torch 装 CPU 版）
+torch==2.13.0+cpu
+torchaudio==2.13.0+cpu
+funasr==1.4.2
+modelscope
+PySocks==1.7.1
+# 视频解析组件（**发行名 videofetch / 导入名 videodl**）。
+# 此前只手装在开发机 → 部署机 `from videodl import videodl` 抛 ImportError，视频链接全解析不了
+# （且原实现返回 None，上层 `.get` 崩成 AttributeError）。release.sh 已加存在性自检。
+videofetch==0.9.1

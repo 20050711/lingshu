@@ -1,0 +1,3 @@
+# 压测工具依赖（安装进 conda aip 环境）
+# 用法: /opt/conda/envs/aip/bin/pip install -r deploy/requirements-locust.txt
+locust==2.46.3

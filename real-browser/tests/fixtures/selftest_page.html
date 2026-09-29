@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>自检页：候选列表</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 10px 0; width: 460px; }
+    .card h3 { margin: 0 0 6px; font-size: 16px; }
+    .meta { color: #666; font-size: 13px; }
+    button { padding: 4px 10px; }
+    select, input { padding: 4px; margin-right: 8px; }
+    /* 悬浮预览副作用：鼠标经过就改一处文字（模拟"掠过即触发"） */
+    .hoverzone:hover .hoverlog::after { content: " ← hover 触发过"; color: #c00; }
+  </style>
+</head>
+<body>
+  <h1>自检页 · 候选列表</h1>
+
+  <div>
+    <label>筛选：</label>
+    <select id="filter" aria-label="内容标签">
+      <option>全部</option>
+      <option>穿搭</option>
+      <option>运动健身</option>
+    </select>
+    <input id="kw" type="text" placeholder="按昵称搜索">
+  </div>
+
+  <div class="hoverzone">
+    <p class="meta hoverlog">这一行在鼠标掠过时会显示副作用标记</p>
+  </div>
+
+  <div class="card">
+    <h3>甲</h3>
+    <p class="meta">28岁 · 本科 · 期望 15-20K</p>
+    <button onclick="document.getElementById('out').textContent='已打招呼：甲'">打招呼</button>
+  </div>
+  <div class="card">
+    <h3>乙</h3>
+    <p class="meta">31岁 · 硕士 · 期望 20-30K</p>
+    <button onclick="document.getElementById('out').textContent='已打招呼：乙'">打招呼</button>
+  </div>
+  <div class="card">
+    <h3>丙</h3>
+    <p class="meta">26岁 · 大专 · 期望 10-15K</p>
+    <button onclick="document.getElementById('out').textContent='已打招呼：丙'">打招呼</button>
+  </div>
+
+  <!-- 下面两个是为了对齐真实站点的常见形状（2026-09-24 实测），自检要覆盖它们 -->
+  <div class="card" id="card-d">
+    <h3>丁</h3>
+    <p class="meta">24岁 · 本科 · 期望 12-18K</p>
+    <!-- 无 href 的 <a>：旧的四类选择器命不中 → 靠新增的「可点」类编号 -->
+    <a class="op-btn op-btn-chat" id="chat-btn"
+       onclick="document.getElementById('out').textContent='已投递：丁'">立即沟通</a>
+  </div>
+
+  <div class="card" id="card-e">
+    <h3>戊</h3>
+    <p class="meta">29岁 · 硕士 · 期望 25-35K</p>
+    <!-- 模拟 target=_blank 的卡片：新标签打开（不跟随的话 agent 会以为“点了没反应”） -->
+    <a id="open-new" href="/selftest_page.html?from=card-e" target="_blank">在新标签打开详情</a>
+  </div>
+
+  <div class="card">
+    <h3>招呼语</h3>
+    <!-- contenteditable：现代聊天框不在 input/textarea 里 -->
+    <div id="chatbox" contenteditable="true" aria-label="招呼语输入框">我是谁谁谁</div>
+  </div>
+
+  <p id="out">（还没操作）</p>
+</body>
+</html>
